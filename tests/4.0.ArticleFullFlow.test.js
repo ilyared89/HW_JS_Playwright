@@ -1,3 +1,6 @@
+// команда для запуска 
+//npx playwright test tests/4.0.ArticleFullFlow.test.js
+
 import { test, expect } from '@playwright/test';
 import { MainPage } from '../src/pages/main.page.js';
 import { AuthPage } from '../src/pages/auth.page.js';
