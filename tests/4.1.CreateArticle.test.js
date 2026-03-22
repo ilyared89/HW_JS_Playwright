@@ -1,15 +1,11 @@
 // tests/4.1.CreateArticle.test.js
 import { test, expect } from '@playwright/test';
-import { AuthPage } from '../src/pages/auth.page.js';
 import { MainPage } from '../src/pages/main.page.js';
 import { EditorPage } from '../src/pages/editor.page.js';
 import { saveArticleData } from './shared/article-data.js';
 
 test.describe('4.1: Создание статьи', () => {
     test('создание новой статьи', async ({ page }) => {
-        // Авторизация
-        const authPage = new AuthPage(page);
-        await authPage.login('test@example.com', 'password123');
         
         // Переход к созданию
         const mainPage = new MainPage(page);

@@ -6,7 +6,6 @@ blob-report/
 *.png
 *.webm
 tests/.auth/
-tests/shared/article-data.json
 .editorconfig
 .env
 *.local.js

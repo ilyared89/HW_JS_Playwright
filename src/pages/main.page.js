@@ -1,47 +1,75 @@
 // src/pages/main.page.js
 import { BasePage } from './base.page.js';
-import { expect } from '@playwright/test';
 
 export class MainPage extends BasePage {
     
     constructor(page) {
         super(page);
+        
         this.signInLink = page.getByText('Login', { exact: true });
         this.yourFeedTab = page.getByText('Your Feed', { exact: true });
         this.globalFeedButton = page.locator('button:has-text("Global Feed")');
         this.newArticleLink = page.getByRole('link', { name: 'New Article' });
     }
 
-    async open() { await super.open('#/'); }
-    async clickSignIn() { await this.signInLink.click(); }
-    async clickYourFeed() { await this.yourFeedTab.click(); }
-    async clickGlobalFeed() { await this.globalFeedButton.click(); }
-    async clickNewArticle() { await this.newArticleLink.click(); }
+    async open() {
+        await super.open('#/');
+    }
+
+    async clickSignIn() {
+        await this.signInLink.click();
+    }
+
+    async clickYourFeed() {
+        await this.yourFeedTab.click();
+    }
+
+    async clickGlobalFeed() {
+        await this.globalFeedButton.click();
+    }
+
+    async clickNewArticle() {
+        await this.newArticleLink.click();
+    }
     
-    // 🔹 Исправленный метод — кликаем по ссылке на статью, не на профиль
+    // 🔹 МЕТОД: Клик по статье в ленте
     async clickArticleByTitle(title) {
-        // Ждём появления превью
-        await this.page.locator('.article-preview').first().waitFor({ state: 'visible', timeout: 10000 });
+        await this.page
+            .locator('a[href*="/article/"]:has(h1)')
+            .first()
+            .waitFor({ state: 'visible' });
         
-        // Ищем превью, содержащее наш заголовок
-        const articlePreview = this.page
-            .locator('.article-preview')
-            .filter({ hasText: title })
+        const articleLink = this.page
+            .locator(`a[href*="/article/"]:has(h1:has-text("${title}"))`)
             .first();
         
-        await expect(articlePreview, `Статья "${title}" не найдена`).toBeVisible({ timeout: 5000 });
+        console.log(`🔍 Ищем статью: "${title}"`);
         
-        // ✅ Кликаем по ссылке "Read more..." — она ведёт на статью
-        // Или ищем ссылку по href содержащему /article/
-        const articleLink = articlePreview.locator('a').filter({ hasText: /Read more/i });
+        await articleLink.waitFor({ state: 'visible' });
+        await articleLink.scrollIntoViewIfNeeded();
+        await articleLink.click();
         
-        // Если "Read more" не найден, ищем по href
-        if (await articleLink.count() === 0) {
-            await articlePreview.locator('a[href*="#/article/"]').first().click();
-        } else {
-            await articleLink.click();
-        }
-        
-        console.log('✅ Статья открыта:', title);
+        console.log(`✅ Статья открыта: ${title}`);
     }
-}
+    
+    // 🔹 МЕТОДЫ ДЛЯ РАБОТЫ С ТЕГАМИ (отдельно, не внутри других методов!)
+    
+    getTagList() {
+        return this.page.locator('.tag-list');
+    }
+    
+    getFirstTag() {
+        return this.page.locator('.tag-pill.tag-default:not(.active)').first();
+    }
+    
+    async clickTag(tagName) {
+        const tag = this.page.locator(`.tag-pill.tag-default:has-text("${tagName}")`).first();
+        await tag.waitFor({ state: 'visible' });
+        await tag.click();
+    }
+    
+    async isTagActive(tagName) {
+        const activeTag = this.page.locator(`.tag-pill.tag-default:has-text("${tagName}").active`).first();
+        return activeTag.isVisible();
+    }
+}  // ← ✅ ЕДИНСТВЕННАЯ закрывающая скобка класса
