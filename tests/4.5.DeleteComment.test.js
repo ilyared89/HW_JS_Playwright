@@ -81,19 +81,9 @@ await mainPage.clickGlobalFeed();
             }
         });
 
-        const deleteButton = newComment
-            .locator('button.btn-outline-secondary')
-            .first();
-
-        if (await deleteButton.isVisible()) {
-            await deleteButton.click();
-            console.log('  → Кнопка удаления нажата');
-            
-            // ⏱️ Ждём исчезновения комментария вместо networkidle
-            await expect(newComment).not.toBeVisible({ timeout: 10000 });
-            console.log('✅ 4.5: Комментарий удалён');
-        } else {
-            console.log('⚠️ 4.5: Кнопка удаления не найдена');
-        }
+        await newComment.locator('button').filter({ hasText: /delete|удалить/i }).click();
+        
+        await expect(newComment).not.toBeVisible();
+        console.log('✅ 4.5: Комментарий удалён');
     });
 });

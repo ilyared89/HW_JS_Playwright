@@ -45,7 +45,7 @@ test.describe('4.2: Открытие статьи из ленты', () => {
         await mainPage.clickGlobalFeed();
         
         // 4. Ждём загрузки списка статей (убрали networkidle — он может виснуть)
-        await page.locator('.article-preview').first().waitFor({ state: 'visible', timeout: 10000 });
+        await page.locator('.article-preview').first().waitFor({ state: 'visible'});
         
         // 5. Открываем статью (ОДИН вызов!)
         await mainPage.clickArticleByTitle(articleTitle);
