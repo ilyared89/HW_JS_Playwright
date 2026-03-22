@@ -34,7 +34,7 @@ test.describe('4.2: Открытие статьи из ленты', () => {
 );
 
         // ⏱️ Ждём, пока статья появится в API (критично!)
-        await page.waitForTimeout(3000);
+        //await page.waitForTimeout(3000);
 
         // Теперь переходим в Global Feed
         await mainPage.open();

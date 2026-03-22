@@ -6,8 +6,6 @@ export class BasePage {
     }
 
     async open(path = '') {
-        // Если path начинается с # — добавляем как hash
-        // Иначе — как обычный путь
         const url = path.startsWith('#') 
             ? `${this.baseUrl}/${path}` 
             : path 

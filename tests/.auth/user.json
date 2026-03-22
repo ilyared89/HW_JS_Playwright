@@ -6,7 +6,7 @@
       "localStorage": [
         {
           "name": "loggedUser",
-          "value": "{\"headers\":{\"Authorization\":\"Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzM5NTA3Nzh9.BffoKANEy0ntjUItZqBBLQcPb1iXffQVT9MFotZ1ahM\"},\"isAuth\":true,\"loggedUser\":{\"email\":\"test@example.com\",\"username\":\"testuser\",\"bio\":null,\"image\":null,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzM5NTA3Nzh9.BffoKANEy0ntjUItZqBBLQcPb1iXffQVT9MFotZ1ahM\"}}"
+          "value": "{\"headers\":{\"Authorization\":\"Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQxOTgyOTF9.KAO1iwAwPeUzsSoh3fhxSUGEdWjXkPbgfW7XTteSUug\"},\"isAuth\":true,\"loggedUser\":{\"email\":\"test@example.com\",\"username\":\"testuser\",\"bio\":null,\"image\":null,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3NzQxOTgyOTF9.KAO1iwAwPeUzsSoh3fhxSUGEdWjXkPbgfW7XTteSUug\"}}"
         }
       ]
     }
