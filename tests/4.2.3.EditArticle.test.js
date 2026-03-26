@@ -1,3 +1,4 @@
+// tests/4.2.3.EditArticle.test.js
 import { test, expect } from '@playwright/test';
 import { MainPage } from '../src/pages/main.page.js';
 import { EditorPage } from '../src/pages/editor.page.js';
@@ -7,24 +8,31 @@ import { loadArticleData } from './shared/article-data.js';
 test.describe('4.2.3: Редактирование статьи', () => {
     test('изменение содержимого статьи', async ({ page }) => {
         
-        const article = loadArticleData();      
+        const article = loadArticleData();
+        
+        // ✅ Проверка без if: expect бросит ошибку, если title нет
+        await expect(article?.title, '❌ Статья не найдена. Запустите тест 4.1!').toBeTruthy();
+        
+        // 🔹 Инициализация страниц
         const mainPage = new MainPage(page);
         const editorPage = new EditorPage(page);
         const articlePage = new ArticlePage(page);
         
+        // 🔹 Навигация к статье (все клики — в методах страниц)
         await mainPage.open();
-        await mainPage.clickGlobalFeed();  
+        await mainPage.clickGlobalFeed();
+        await mainPage.waitForArticles();
         
-        await page.locator('a[href*="/article/"]:has(h1)').first().waitFor({ state: 'visible' });
+        // 🔹 Поиск по части заголовка (метод страницы делает клик!)
+        await mainPage.clickArticleByTitle(article.title);
         
-        const articleLink = page
-            .locator(`a[href*="/article/"]:has(h1:has-text("${article.title}"))`)
-            .first();
-        await articleLink.click();
-        
+        // 🔹 Проверки
         await expect(page).toHaveURL(/.*#\/article\//);
+        await expect(page.locator('h1')).toContainText(article.title);
+        /*await expect(page.locator('h1')).toContainText(article.title);
+        await expect(page).toHaveURL(/.*#\/article\//);*/
         
-        // Редактируем
+        // 🔹 Редактирование (клик по кнопке — внутри clickEditArticle)
         await articlePage.clickEditArticle();
         await expect(page).toHaveURL(/.*#\/editor\//);
         

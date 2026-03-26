@@ -1,75 +1,63 @@
 // src/pages/main.page.js
 import { BasePage } from './base.page.js';
+import { expect } from '@playwright/test';
 
 export class MainPage extends BasePage {
-    
     constructor(page) {
         super(page);
         
+        // Навигация
         this.signInLink = page.getByText('Login', { exact: true });
         this.yourFeedTab = page.getByText('Your Feed', { exact: true });
         this.globalFeedButton = page.locator('button:has-text("Global Feed")');
         this.newArticleLink = page.getByRole('link', { name: 'New Article' });
+        
+        // Статьи
+        this.articleCards = page.locator('.article-preview');
+        this.readMoreLink = page.locator('.article-preview a').filter({ hasText: /Read more/i }).first();
     }
 
-    async open() {
-        await super.open('#/');
-    }
-
-    async clickSignIn() {
-        await this.signInLink.click();
-    }
-
-    async clickYourFeed() {
-        await this.yourFeedTab.click();
-    }
-
-    async clickGlobalFeed() {
-        await this.globalFeedButton.click();
-    }
-
-    async clickNewArticle() {
-        await this.newArticleLink.click();
+    async open() { 
+        await super.open('#/'); 
     }
     
-    // 🔹 МЕТОД: Клик по статье в ленте
+    async clickYourFeed() { 
+        await this.yourFeedTab.click(); 
+    }
+    
+    async clickGlobalFeed() { 
+        await this.globalFeedButton.click(); 
+        await expect(this.articleCards.first()).toBeVisible();
+    }
+    
+    async waitForArticles() {
+        await expect.poll(async () => {
+            return await this.articleCards.count();
+        }, {
+            message: 'Ожидаем появления статей',
+            intervals: [500]
+        }).toBeGreaterThan(0);
+    }
+    
+    async clickNewArticle() { 
+        await this.newArticleLink.click(); 
+    }
+    
+    async openFirstArticle() {
+        await expect(this.readMoreLink).toBeVisible();
+        await this.readMoreLink.click();
+    }
+    
+    // ✅ Новый метод: прямой переход по slug
+    async openArticleBySlug(slug) {
+        await this.page.goto(`https://realworld.qa.guru/#/article/${slug}`);
+        await this.page.locator('h1').waitFor({ state: 'visible' });
+    }
+    
     async clickArticleByTitle(title) {
-        await this.page
-            .locator('a[href*="/article/"]:has(h1)')
-            .first()
-            .waitFor({ state: 'visible' });
-        
-        const articleLink = this.page
-            .locator(`a[href*="/article/"]:has(h1:has-text("${title}"))`)
-            .first();
-        
-        console.log(`🔍 Ищем статью: "${title}"`);
-        
-        await articleLink.waitFor({ state: 'visible' });
-        await articleLink.scrollIntoViewIfNeeded();
-        await articleLink.click();
-        
-        console.log(`✅ Статья открыта: ${title}`);
+        const article = this.articleCards.filter({ hasText: title }).first();
+        await expect(article, `Статья "${title}" не найдена`).toBeVisible();
+        await article.locator('a').filter({ hasText: /Read more/i }).click();
+        console.log('✅ Статья открыта:', title);
     }
-    
-    // 🔹 МЕТОДЫ ДЛЯ РАБОТЫ С ТЕГАМИ (отдельно, не внутри других методов!)
-    
-    getTagList() {
-        return this.page.locator('.tag-list');
-    }
-    
-    getFirstTag() {
-        return this.page.locator('.tag-pill.tag-default:not(.active)').first();
-    }
-    
-    async clickTag(tagName) {
-        const tag = this.page.locator(`.tag-pill.tag-default:has-text("${tagName}")`).first();
-        await tag.waitFor({ state: 'visible' });
-        await tag.click();
-    }
-    
-    async isTagActive(tagName) {
-        const activeTag = this.page.locator(`.tag-pill.tag-default:has-text("${tagName}").active`).first();
-        return activeTag.isVisible();
-    }
-}  // ← ✅ ЕДИНСТВЕННАЯ закрывающая скобка класса
+}

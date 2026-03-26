@@ -9,3 +9,4 @@ tests/.auth/
 .editorconfig
 .env
 *.local.js
+auth.setup.js.bak

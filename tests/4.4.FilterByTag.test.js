@@ -12,10 +12,10 @@ test.describe('4.4: Фильтрация по тегам', () => {
         await mainPage.clickGlobalFeed();
         
         // Ждём загрузки тегов
-        await page.locator('.tag-list').waitFor({ state: 'visible' });
+        await expect(page.locator('.tag-list').first()).toBeVisible();
         
         // Берём первый КЛИКАБЕЛЬНЫЙ тег (button или a, не li)
-        const tag = page.locator('button.tag-pill, a.tag-pill').first();
+        const tag = page.locator('.tag-list').first().locator('.tag-pill').first();
         await tag.waitFor({ state: 'visible' });
         
         const tagName = await tag.textContent();

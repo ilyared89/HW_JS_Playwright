@@ -19,8 +19,8 @@ test('4.5.Изменение личных настроек', async ({ page }) =>
     await settingsPage.openSettings();
     await settingsPage.updateSettings(newSettings);
     
-    // Проверяем сохранение
-    await settingsPage.verifySettings(newSettings);
-    
-    console.log('✅ Настройки успешно обновлены');
+    // ✅ Проверка через метод пейджа
+    await expect(settingsPage.usernameInput).toHaveValue(newSettings.username);
+    await expect(settingsPage.emailInput).toHaveValue(newSettings.email);    
+    console.log('✅4.5 Настройки успешно обновлены');
 });

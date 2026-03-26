@@ -1,78 +1,63 @@
 // src/pages/editor.page.js
 import { BasePage } from './base.page.js';
+import { expect } from '@playwright/test';
 
+// ✅ КРИТИЧНО: именованный export class (не export default!)
 export class EditorPage extends BasePage {
     constructor(page) {
         super(page);
         
-        // 🔹 Поля формы — точные селекторы по placeholder
-        this.titleInput = page.locator('input[placeholder="Article Title"]');
-        this.descriptionInput = page.locator('input[placeholder="What\'s this article about?"]');
-        this.contentInput = page.locator('textarea[placeholder="Write your article (in markdown)"]');
-        this.tagsInput = page.locator('input[placeholder="Enter tags"]');
-        
-        // 🔹 Кнопка: ищем по тексту, но с запасным вариантом
-        this.publishButton = page.locator('button:has-text("Publish Article")');
-        
-        // 🔹 Для проверок
+        // 🔹 Все локаторы в конструкторе (#3, #4)
+        this.titleInput = page.locator('input[name="title"]');
+        this.descriptionInput = page.locator('input[name="description"]');
+        this.contentInput = page.locator('textarea[name="body"]');
+        //this.tagsInput = page.locator('input[name="tags"]');
+        this.publishButton = page.locator('button:has-text("Publish Article")').first();
+        this.saveButton = page.locator('button:has-text("Update Article")').first();
         this.articleTitle = page.locator('h1');
-        this.articleContent = page.locator('.article-content').first();
     }
 
-    // 🔹 СОЗДАНИЕ статьи — с обработкой ошибок
-    async createArticle(title, description, content, tags) {
-        // Заполняем поля
-        await this.titleInput.fill(title);
-        await this.descriptionInput.fill(description);
-        await this.contentInput.fill(content);
-        if (tags) await this.tagsInput.fill(tags);
+    // 🔹 Создаёт статью — теги опциональны (#6 — клик только здесь)
+    async createArticle(title, description, content, tags = '') {
+        // 🔹 Нативный ввод для React (#2 — без timeout)
+        await this.titleInput.click();
+        await this.titleInput.pressSequentially(title);
         
-        // Кликаем по кнопке
+        await this.descriptionInput.click();
+        await this.descriptionInput.pressSequentially(description);
+        
+        await this.contentInput.click();
+        await this.contentInput.pressSequentially(content);
+        
+        // 🔹 Теги: только если переданы
+        if (tags && tags.trim()) {
+            await this.tagsInput.click();
+            await this.tagsInput.pressSequentially(tags);
+            await this.page.keyboard.press('Enter');
+            await this.page.waitForTimeout(50);
+        }
+        
+        // 🔹 Отправка: Enter + клик по кнопке (#6)
+        await this.contentInput.press('Enter');
+        await expect(this.publishButton).toBeVisible();
+        await this.publishButton.scrollIntoViewIfNeeded();
         await this.publishButton.click();
         
-        // 🔹 Ждём редирект — но с обработкой таймаута
-        try {
-            await this.page.waitForURL(/.*#\/article\//, { timeout: 15000 });
-        } catch (e) {
-            // Если редиректа нет — возможно, ошибка валидации
-            const errors = await this.page.locator('.error-messages li').allTextContents();
-            if (errors.length > 0) {
-                throw new Error(`Форма не валидна: ${errors.join(', ')}`);
-            }
-            throw e;
-        }
+        // 🔹 Ждём сеть и редирект
+        await this.page.waitForLoadState('networkidle');
+        await expect(this.page).toHaveURL(/article/);
+        await expect(this.articleTitle).toBeVisible();
     }
 
-    // 🔹 РЕДАКТИРОВАНИЕ: обновить контент
-    async updateContent(newText) {
-        await this.contentInput.waitFor({ state: 'visible' });
-        await this.contentInput.fill(newText);
+    async updateContent(content) {
+        await this.contentInput.fill(content);
     }
-
-    // 🔹 РЕДАКТИРОВАНИЕ: обновить заголовок
-    async updateTitle(newTitle) {
-        await this.titleInput.fill(newTitle);
-    }
-
-    // 🔹 СОХРАНЕНИЕ изменений
+    
     async save() {
-        // Кнопка может называться "Update Article" при редактировании
-        const button = this.page.locator('button:has-text("Update Article"), button:has-text("Publish Article")').first();
-        await button.click();
-        
-        // Ждём редирект
-        await this.page.waitForURL(/.*#\/article\//, { timeout: 15000 });
+        await expect(this.saveButton).toBeVisible();
+        await this.saveButton.scrollIntoViewIfNeeded();
+        await this.saveButton.click();
+        await this.page.waitForLoadState('networkidle');
+        await expect(this.page).toHaveURL(/article/);
     }
-
-    // 🔹 Комбинированный метод
-    async updateAndSave({ content, title }) {
-        if (content) await this.updateContent(content);
-        if (title) await this.updateTitle(title);
-        await this.save();
-    }
-
-    // 🔹 Геттеры для проверок
-    async getArticleTitle() {
-        return this.articleTitle.textContent();
-    }
-}
+}  

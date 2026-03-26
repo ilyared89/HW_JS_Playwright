@@ -1,33 +1,31 @@
 // src/pages/auth.page.js
 import { BasePage } from './base.page.js';
+import { expect } from '@playwright/test';
 
 export class AuthPage extends BasePage {
     
     constructor(page) {
         super(page);
         
+        // ✅ Все локаторы в конструкторе
         this.emailInput = page.getByRole('textbox', { name: 'Email' });
         this.passwordInput = page.locator('input[type="password"]');
         this.signInButton = page.getByRole('button', { name: 'Login' });
-        // 🔹 Гибкий селектор: ищет "Your Feed" в любом элементе
-        this.yourFeedTab = page.locator(':has-text("Your Feed")').first();
+        this.yourFeedTab = page.getByText('Your Feed', { exact: true });
+        this.globalFeedTab = page.getByText('Global Feed', { exact: true });
     }
 
     async login(email, password) {
         await this.openLogin();
         
-        // Ждём готовности формы
-        await this.emailInput.waitFor({ state: 'visible' });
-        
         await this.emailInput.fill(email);
         await this.passwordInput.fill(password);
+        
+        // ✅ Клик только в методе пейджа
         await this.signInButton.click();
         
-        // 🔹 Надёжное ожидание: редирект ИЛИ появление вкладки
-        await Promise.race([
-            this.page.waitForURL(/.*#\/$/, { timeout: 10000 }),
-            this.yourFeedTab.waitFor({ state: 'visible', timeout: 10000 })
-        ]);
+        // ✅ Ожидание без if — через expect
+        await expect(this.yourFeedTab.or(this.globalFeedTab)).toBeVisible();
     }
 
     async openLogin() {
@@ -37,4 +35,4 @@ export class AuthPage extends BasePage {
     async saveStorageState(path) {
         await this.page.context().storageState({ path });
     }
-} 
+}

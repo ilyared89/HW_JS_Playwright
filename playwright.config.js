@@ -1,42 +1,37 @@
 // playwright.config.js
-// @ts-check
 import { defineConfig, devices } from '@playwright/test';
-import fs from 'fs';
 
 const authFile = 'tests/.auth/user.json';
 
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 1,   
-  reporter: 'html',
   
-  // ГЛОБАЛЬНЫЕ ТАЙМАУТЫ:
-  timeout: 30000,            
-  expect: {
-    timeout: 10000,           
-  },
+  // 🔹 ГЛОБАЛЬНЫЙ SETUP — выполняется перед ЛЮБЫМ запуском
+  globalSetup: './tests/setup/global.setup.js',
+  
+  fullyParallel: false,  // ✅ Последовательно для зависимых тестов
+  forbidOnly: !!process.env.CI,
+  retries: 0,
+  workers: 1,            // ✅ Один воркер = одна сессия
+  reporter: 'line',
+  
+  timeout: 30000,
+  expect: { timeout: 10000 },
   
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // 🔹 Один источник истины для сессии
+    storageState: authFile,
   },
 
   projects: [
     {
-      name: 'setup',
-      testMatch: /.*\.setup\.js/,
-    },
-    {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: authFile,
-      },
-      dependencies: ['setup'], 
-      testMatch: '**/*.test.js',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.test\.js/,
+      // dependencies: ['setup'], 
+      // testMatch: '**/*.test.js',
     },
   ],
 });

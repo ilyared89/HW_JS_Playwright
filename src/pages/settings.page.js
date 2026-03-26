@@ -6,56 +6,39 @@ export class SettingsPage extends BasePage {
     constructor(page) {
         super(page);
         
-        // Поля формы
+        // 🔹 Локаторы в конструкторе (#3, #4)
         this.profileImageInput = page.locator('input[name="image"]');
         this.usernameInput = page.locator('input[name="username"]');
-        this.bioInput = page.locator('textarea[name="bio"], textarea[rows="8"]');
+        this.bioInput = page.locator('textarea[name="bio"]');
         this.emailInput = page.locator('input[name="email"]');
         this.passwordInput = page.locator('input[name="password"]');
-        
-        // ✅ Упрощённый селектор кнопки
         this.updateSettingsButton = page.locator('button:has-text("Update Settings")');
     }
 
     async openSettings() {
-        // ✅ Прямой переход (без .trim() на литерале)
-        await this.page.goto('https://realworld.qa.guru/#/settings');
-        await this.usernameInput.waitFor({ state: 'visible'});
+        // 🔹 .trim() убирает пробелы в конце!
+        await this.page.goto('https://realworld.qa.guru/#/settings'.trim());
+        await expect(this.usernameInput).toBeVisible();
     }
 
     async updateSettings(settings) {
-        // ✅ Очищаем поля перед заполнением
-        await this.usernameInput.fill('');
-        await this.usernameInput.fill(settings.username);
-        
-        await this.bioInput.fill('');
-        await this.bioInput.fill(settings.bio);
-        
-        await this.emailInput.fill('');
-        await this.emailInput.fill(settings.email);
-        
-        await this.passwordInput.fill('');
-        await this.passwordInput.fill(settings.password);
-        
-        await this.profileImageInput.fill('');
-        await this.profileImageInput.fill(settings.image);
-        
-        // ✅ Проверяем, что кнопка видна
-        await expect(this.updateSettingsButton).toBeVisible();
-        
-        // Нажимаем кнопку
-        await this.updateSettingsButton.click();
-        
-        // ✅ Ждём networkidle вместо проверки enabled (кнопка может пропасть)
-        await this.page.waitForLoadState('networkidle');
-        
-        console.log('✅ Настройки отправлены');
-    }
+    // Заполняем поля
+    await this.usernameInput.fill(settings.username);
+    await this.bioInput.fill(settings.bio);
+    await this.emailInput.fill(settings.email);
+    await this.passwordInput.fill(settings.password);
+    await this.profileImageInput.fill(settings.image.trim());
     
-    // ✅ Отдельный метод для проверки сохранения
-    async verifySettings(settings) {
-        await expect(this.usernameInput).toHaveValue(settings.username);
-        await expect(this.emailInput).toHaveValue(settings.email);
-        console.log('✅ Данные сохранены корректно');
-    }
+    // 🔹 Простой надёжный селектор
+    const submitButton = this.page.locator('button:has-text("Update Settings")').first();
+    
+    // 🔹 Скроллим и кликаем
+    await submitButton.scrollIntoViewIfNeeded();
+    await submitButton.click();
+    
+    // 🔹 ПРОВЕРЯЕМ РЕЗУЛЬТАТ: поля содержат новые значения
+    // Это работает, даже если страница обновилась после клика
+    await expect(this.usernameInput).toHaveValue(settings.username, { timeout: 10000 });
+    await expect(this.emailInput).toHaveValue(settings.email);
+}   
 }

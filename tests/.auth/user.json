@@ -6,7 +6,7 @@
       "localStorage": [
         {
           "name": "loggedUser",
-          "value": "{\"headers\":{\"Authorization\":\"Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyLTE3NzQyMTQ2Mjk3ODAiLCJlbWFpbCI6InRlc3QtMTc3NDIxNDYyOTc4MEBleGFtcGxlLmNvbSIsImlhdCI6MTc3NDIxNDYzNn0.rzte1Jor8fjZ8gjcARX8xfjzSbC7-2oTEnprG25zi2o\"},\"isAuth\":true,\"loggedUser\":{\"email\":\"test-1774214629780@example.com\",\"username\":\"testuser-1774214629780\",\"bio\":null,\"image\":null,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyLTE3NzQyMTQ2Mjk3ODAiLCJlbWFpbCI6InRlc3QtMTc3NDIxNDYyOTc4MEBleGFtcGxlLmNvbSIsImlhdCI6MTc3NDIxNDYzNn0.rzte1Jor8fjZ8gjcARX8xfjzSbC7-2oTEnprG25zi2o\"}}"
+          "value": "{\"headers\":{\"Authorization\":\"Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyLTE3NzQ1MDIwMjQyOTkiLCJlbWFpbCI6InRlc3QtMTc3NDUwMjAyNDI5OUBleGFtcGxlLmNvbSIsImlhdCI6MTc3NDUwMjAyNn0.Vljdf9-FdtFZJHTJp762T1vs9I-RbHk_jxbntFnLoJU\"},\"isAuth\":true,\"loggedUser\":{\"email\":\"test-1774502024299@example.com\",\"username\":\"testuser-1774502024299\",\"bio\":null,\"image\":null,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyLTE3NzQ1MDIwMjQyOTkiLCJlbWFpbCI6InRlc3QtMTc3NDUwMjAyNDI5OUBleGFtcGxlLmNvbSIsImlhdCI6MTc3NDUwMjAyNn0.Vljdf9-FdtFZJHTJp762T1vs9I-RbHk_jxbntFnLoJU\"}}"
         }
       ]
     }
