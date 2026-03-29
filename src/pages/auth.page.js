@@ -1,17 +1,17 @@
 // src/pages/auth.page.js
-import { BasePage } from "./base.page.js";
-import { expect } from "@playwright/test";
+import { BasePage } from './base.page.js';
+import { expect } from '@playwright/test';
 
 export class AuthPage extends BasePage {
   constructor(page) {
     super(page);
 
     // ✅ Все локаторы в конструкторе
-    this.emailInput = page.getByRole("textbox", { name: "Email" });
+    this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.passwordInput = page.locator('input[type="password"]');
-    this.signInButton = page.getByRole("button", { name: "Login" });
-    this.yourFeedTab = page.getByText("Your Feed", { exact: true });
-    this.globalFeedTab = page.getByText("Global Feed", { exact: true });
+    this.signInButton = page.getByRole('button', { name: 'Login' });
+    this.yourFeedTab = page.getByText('Your Feed', { exact: true });
+    this.globalFeedTab = page.getByText('Global Feed', { exact: true });
   }
 
   async login(email, password) {
@@ -28,7 +28,7 @@ export class AuthPage extends BasePage {
   }
 
   async openLogin() {
-    await this.open("#/login");
+    await this.open('#/login');
   }
 
   async saveStorageState(path) {

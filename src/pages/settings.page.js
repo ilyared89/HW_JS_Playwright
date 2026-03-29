@@ -1,6 +1,6 @@
 // src/pages/settings.page.js
-import { BasePage } from "./base.page.js";
-import { expect } from "@playwright/test";
+import { BasePage } from './base.page.js';
+import { expect } from '@playwright/test';
 
 export class SettingsPage extends BasePage {
   constructor(page) {
@@ -12,14 +12,12 @@ export class SettingsPage extends BasePage {
     this.bioInput = page.locator('textarea[name="bio"]');
     this.emailInput = page.locator('input[name="email"]');
     this.passwordInput = page.locator('input[name="password"]');
-    this.updateSettingsButton = page.locator(
-      'button:has-text("Update Settings")',
-    );
+    this.updateSettingsButton = page.locator('button:has-text("Update Settings")');
   }
 
   async openSettings() {
     // 🔹 .trim() убирает пробелы в конце!
-    await this.page.goto("https://realworld.qa.guru/#/settings".trim());
+    await this.page.goto('https://realworld.qa.guru/#/settings'.trim());
     await expect(this.usernameInput).toBeVisible();
   }
 
@@ -32,9 +30,7 @@ export class SettingsPage extends BasePage {
     await this.profileImageInput.fill(settings.image.trim());
 
     // 🔹 Простой надёжный селектор
-    const submitButton = this.page
-      .locator('button:has-text("Update Settings")')
-      .first();
+    const submitButton = this.page.locator('button:has-text("Update Settings")').first();
 
     // 🔹 Скроллим и кликаем
     await submitButton.scrollIntoViewIfNeeded();
@@ -42,9 +38,7 @@ export class SettingsPage extends BasePage {
 
     // 🔹 ПРОВЕРЯЕМ РЕЗУЛЬТАТ: поля содержат новые значения
     // Это работает, даже если страница обновилась после клика
-    await expect(this.usernameInput).toHaveValue(settings.username, {
-      timeout: 10000,
-    });
+    await expect(this.usernameInput).toHaveValue(settings.username);
     await expect(this.emailInput).toHaveValue(settings.email);
   }
 }

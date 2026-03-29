@@ -1,10 +1,10 @@
 // tests/4.3.DeleteComment.test.js
-import { test, expect } from "@playwright/test";
-import { MainPage } from "../src/pages/main.page.js";
-import { CommentsPage } from "../src/pages/comments.page.js";
+import { test, expect } from '@playwright/test';
+import { MainPage } from '../src/pages/main.page.js';
+import { CommentsPage } from '../src/pages/comments.page.js';
 
-test.describe("4.3: Удаление комментария", () => {
-  test("удаление комментария из статьи", async ({ page }) => {
+test.describe('4.3: Удаление комментария', () => {
+  test('удаление комментария из статьи', async ({ page }) => {
     const mainPage = new MainPage(page);
     const commentsPage = new CommentsPage(page);
 
@@ -22,11 +22,11 @@ test.describe("4.3: Удаление комментария", () => {
 
     const newComment = commentsPage.getCommentLocator(commentText);
     await expect(newComment).toBeVisible();
-    console.log("✅ Комментарий добавлен:", commentText);
+    console.log('✅ Комментарий добавлен:', commentText);
 
     // Удаляем (обработчик диалога уже в конструкторе!)
     await commentsPage.deleteComment(commentText);
 
-    console.log("✅ 4.3: Комментарий удалён");
+    console.log('✅ 4.3: Комментарий удалён');
   });
 });

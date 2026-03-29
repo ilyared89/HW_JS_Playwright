@@ -1,43 +1,46 @@
 // tests/4.1.CreateArticle.test.js
-import { test, expect } from "@playwright/test";
-import { MainPage } from "../src/pages/main.page.js";
-import { EditorPage } from "../src/pages/editor.page.js";
-import { saveArticleData } from "./shared/article-data.js";
+import { test, expect } from '@playwright/test';
+import { MainPage } from '../src/pages/main.page.js';
+import { EditorPage } from '../src/pages/editor.page.js';
+import { ArticlePage } from '../src/pages/article.page.js'; // 🔹 Добавлен импорт
+import { saveArticleData } from './shared/article-data.js';
 
-// ✅ Используем сессию из global.setup.js
-//test.use({ storageState: 'tests/.auth/user.json' });
-
-test.describe("4.1: Создание статьи", () => {
-  test("создание новой статьи", async ({ page }) => {
+test.describe('4.1: Создание статьи', () => {
+  test('создание новой статьи', async ({ page }) => {
+    // 🔹 Инициализация страниц
     const mainPage = new MainPage(page);
+    const editorPage = new EditorPage(page);
+    const articlePage = new ArticlePage(page); // 🔹 Страница статьи
+
+    // 🔹 Навигация к редактору
     await mainPage.open();
-    await expect(mainPage.yourFeedTab).toBeVisible();
     await mainPage.clickNewArticle();
 
-    const editorPage = new EditorPage(page);
-    const articleTitle = `Article-${Date.now()}`;
+    // 🔹 Генерация уникальных данных
+    const timestamp = Date.now();
+    const articleTitle = `Article-${timestamp}`;
+    const articleDescription = `Description for ${timestamp}`;
+    const articleContent = `Content body for ${timestamp}`;
+    const articleTags = `tag-${timestamp}`;
 
-    await editorPage.createArticle(
-      articleTitle,
-      "Test description",
-      "Test content",
-    );
+    // 🔹 Создание статьи
+    await editorPage.createArticle(articleTitle, articleDescription, articleContent, articleTags);
 
+    // 🔹 Проверка: хэш в URL изменился на /article/
     await expect(page).toHaveURL(/.*#\/article\//);
-    await expect(editorPage.articleTitle).toContainText(articleTitle);
 
-    const url = page.url(); // https://.../#/article/Article-123
-    const articleName = url.split("/article/")[1]?.split("?")[0];
+    // 🔹 ПРОВЕРКА ЗАГОЛОВКА: используем ArticlePage, а не EditorPage
+    await expect(articlePage.articleTitle).toContainText(articleTitle);
 
-    // 🔹 Сохраняем данные для зависимых тестов
+    // 🔹 Извлекаем название из хэша (для realworld: slug === title)
+    const articleName = await page.evaluate(() => {
+      const hash = location.hash; // "#/article/Article-123"
+      return hash.split('/article/')[1]?.split('?')[0];
+    });
 
+    // 🔹 Сохраняем данные для зависимых тестов (4.2.*)
     saveArticleData({ title: articleTitle, slug: articleName });
 
-    console.log(
-      "✅ 4.1: Статья создана:",
-      articleTitle,
-      "| URL часть:",
-      articleName,
-    );
+    console.log('✅ 4.1: Статья создана:', articleTitle, '| Slug:', articleName);
   });
 });

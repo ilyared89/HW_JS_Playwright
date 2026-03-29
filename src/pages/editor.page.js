@@ -3,56 +3,63 @@ import { BasePage } from './base.page.js';
 import { expect } from '@playwright/test';
 
 export class EditorPage extends BasePage {
-    constructor(page) {
-        super(page);
-        
-        // 🔹 ВСЕ локаторы в конструкторе
-        this.titleInput = page.locator('input[name="title"]');
-        this.descriptionInput = page.locator('input[name="description"]');
-        this.contentInput = page.locator('textarea[name="body"]');
-        this.tagsInput = page.locator('input[placeholder="Enter tags"]');
-        this.publishButton = page.locator('button:has-text("Publish Article")').first();
-        this.saveButton = page.locator('button:has-text("Update Article")').first();
-        this.articleTitle = page.locator('h1');
+  constructor(page) {
+    super(page);
+
+    // 🔹 Все локаторы в конструкторе
+    this.titleInput = page.locator('input[name="title"]');
+    this.descriptionInput = page.locator('input[name="description"]');
+    this.contentInput = page.locator('textarea[name="body"]');
+    this.tagsInput = page.locator('input[placeholder="Enter tags"]');
+    this.publishButton = page.locator('button:has-text("Publish Article")').first();
+    this.saveButton = page.locator('button:has-text("Update Article")').first();
+  }
+
+  async createArticle(title, description, content, tags = '') {
+    // 🔹 1. Заполняем поля
+    await this.titleInput.waitFor({ state: 'visible' });
+    await this.titleInput.fill(title);
+    await this.descriptionInput.fill(description);
+    await this.contentInput.fill(content);
+
+    // 🔹 2. Теги: только если переданы
+    if (tags?.trim()) {
+      await this.tagsInput.fill(tags);
+      await this.page.keyboard.press('Enter');
+      await this.page.waitForTimeout(300);
     }
 
-    async createArticle(title, description, content, tags = '') {
-        // 🔹 Надёжный ввод: fill()
-        await this.titleInput.fill(title);
-        await this.descriptionInput.fill(description);
-        await this.contentInput.fill(content);
-        
-        // 🔹 Теги: только если переданы
-        if (tags?.trim()) {
-            await this.tagsInput.fill(tags);
-            await this.page.keyboard.press('Enter');
-        }
-        
-        // 🔹 Публикация: ждём видимость и кликаем
-        await this.publishButton.waitFor({ state: 'visible' });
-        await expect(this.publishButton).toBeEnabled();
-        await this.publishButton.scrollIntoViewIfNeeded();
-        await this.publishButton.click();
-        
-        // 🔹 🔥 Надёжное ожидание для hash-роутинга (SPA)
-        // Ждём появление заголовка статьи вместо ненадёжного waitForURL
-        await this.articleTitle.waitFor({ state: 'visible', timeout: 15000 });
-        
-        // 🔹 Дополнительно: ждём контент статьи (используем this.page!)
-        await this.page.locator('.article-content, .article-page p').first().waitFor({ state: 'visible', timeout: 10000 });
-    }
+    // 🔹 3. Ждём, что кнопка видима и включена
+    await this.publishButton.waitFor({ state: 'visible' });
+    await expect(this.publishButton).toBeEnabled();
+    await this.publishButton.scrollIntoViewIfNeeded();
 
-    async updateContent(content) {
-        await this.contentInput.fill(content);
-    }
-    
-    async save() {
-        await this.saveButton.waitFor({ state: 'visible' });
-        await expect(this.saveButton).toBeEnabled();
-        await this.saveButton.scrollIntoViewIfNeeded();
-        await this.saveButton.click();
-        
-        // 🔹 То же самое для редактирования
-        await this.articleTitle.waitFor({ state: 'visible', timeout: 15000 });
-    }
+    // 🔹 4. Кликаем по кнопке публикации
+    await this.publishButton.click();
+
+    // 🔹 5. Ждём редирект через изменение хэша (для hash-роутинга)
+    await this.page.waitForFunction(() => location.hash.includes('/article/'));
+
+    // 🔹 6. Финальное ожидание: заголовок статьи
+    await this.page.locator('h1').first().waitFor({ state: 'visible' });
+    await this.page.waitForTimeout(500);
+
+    console.log('✅ Статья создана, URL:', this.page.url());
+  }
+
+  async updateContent(content) {
+    // 🔹 Ждём видимости поля перед заполнением
+    await this.contentInput.waitFor({ state: 'visible' });
+    await this.contentInput.fill(content);
+  }
+
+  async save() {
+    await this.saveButton.waitFor({ state: 'visible' });
+    await expect(this.saveButton).toBeEnabled();
+    await this.saveButton.scrollIntoViewIfNeeded();
+    await this.saveButton.click();
+
+    await this.page.waitForFunction(() => location.hash.includes('/article/'));
+    await this.page.locator('h1').first().waitFor({ state: 'visible' });
+  }
 }

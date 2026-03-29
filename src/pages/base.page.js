@@ -2,17 +2,17 @@
 export class BasePage {
   constructor(page) {
     this.page = page;
-    this.baseUrl = "https://realworld.qa.guru";
+    this.baseUrl = 'https://realworld.qa.guru';
   }
 
-  async open(path = "") {
-    const url = path.startsWith("#")
+  async open(path = '') {
+    const url = path.startsWith('#')
       ? `${this.baseUrl}/${path}`
       : path
-        ? `${this.baseUrl}${path.startsWith("/") ? "" : "/"}${path}`
+        ? `${this.baseUrl}${path.startsWith('/') ? '' : '/'}${path}`
         : this.baseUrl;
 
-    console.log("Navigating to:", url);
+    console.log('Navigating to:', url);
     await this.page.goto(url);
   }
 }

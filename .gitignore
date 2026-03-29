@@ -13,3 +13,5 @@ auth.setup.js.bak
 .prettierrc
 findstr
 nulrmdir
+*.bat
+*.ps1

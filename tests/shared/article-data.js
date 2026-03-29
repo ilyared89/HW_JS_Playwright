@@ -2,8 +2,8 @@
 import fs from 'fs';
 import path from 'path';
 
-
-const DATA_FILE = path.join('tests', 'shared', 'article-data.json');
+// 🔹 Используем process.cwd() для гарантированного пути от корня проекта
+const DATA_FILE = path.join(process.cwd(), 'tests', 'shared', 'article-data.json');
 
 export function saveArticleData(article) {
     // Создаём папку, если нет
@@ -11,7 +11,9 @@ export function saveArticleData(article) {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(article, null, 2));
+    // 🔹 Явно указываем кодировку UTF-8 (важно для Windows)
+    fs.writeFileSync(DATA_FILE, JSON.stringify(article, null, 2), 'utf-8');
+    console.log('💾 Статья сохранена:', DATA_FILE);
 }
 
 export function loadArticleData() {
