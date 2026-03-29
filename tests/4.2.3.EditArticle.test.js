@@ -6,35 +6,33 @@ import { ArticlePage } from '../src/pages/article.page.js';
 import { loadArticleData } from './shared/article-data.js';
 
 test.describe('4.2.3: Редактирование статьи', () => {
-  test('изменение содержимого статьи', async ({ page }) => {
-    const mainPage = new MainPage(page);
-    const editorPage = new EditorPage(page);
-    const articlePage = new ArticlePage(page);
-
-    const article = loadArticleData();
-    await expect(article?.slug, '❌ Статья не найдена. Запустите тест 4.1!').toBeTruthy();
-
-    // 🔹 Открываем статью
-    await mainPage.openArticleBySlugAndTitle(article.slug, article.title);
-
-    // 🔹 🔥 НОВОЕ: Нажимаем "Edit Article" для перехода в редактор
-    const editButton = page.locator('button:has-text("Edit Article")').first();
-    await expect(editButton).toBeVisible();
-    await editButton.click();
-
-    // 🔹 Ждём загрузки редактора
-    await page.locator('input[name="title"]').waitFor({ state: 'visible' });
-
-    // 🔹 Редактируем контент
-    const newContent = `Updated content ${Date.now()}`;
-    await editorPage.updateContent(newContent);
-
-    // 🔹 Сохраняем изменения
-    await editorPage.save();
-
-    // 🔹 Проверяем обновление
-    await expect(articlePage.articleContent).toContainText(newContent);
-
-    console.log('✅ 4.2.3: Статья отредактирована');
-  });
+    test('изменение содержимого статьи', async ({ page }) => {
+        
+        const mainPage = new MainPage(page);
+        const editorPage = new EditorPage(page);
+        const articlePage = new ArticlePage(page);
+        
+        // 🔹 Загружаем данные статьи из 4.1
+        const article = loadArticleData();
+        await expect(article?.slug, '❌ Статья не найдена. Запустите тест 4.1!').toBeTruthy();
+        
+        // 🔹 Открываем статью по slug
+        await mainPage.openArticleBySlugAndTitle(article.slug, article.title);
+        
+        // 🔹 ✅ ИСПРАВЛЕНО: Используем методы из Page Object (не page.locator!)
+        await mainPage.clickEditArticle();      // ✅ Вместо editButton.click()
+        await mainPage.waitForEditorLoaded();   // ✅ Вместо page.locator(...).waitFor()
+        
+        // 🔹 Редактируем контент
+        const newContent = `Updated content ${Date.now()}`;
+        await editorPage.updateContent(newContent);
+        
+        // 🔹 Сохраняем изменения
+        await editorPage.save();
+        
+        // 🔹 Проверяем обновление
+        await expect(articlePage.articleContent).toContainText(newContent);
+        
+        console.log('✅ 4.2.3: Статья отредактирована');
+    });
 });

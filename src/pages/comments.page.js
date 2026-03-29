@@ -48,7 +48,7 @@ export class CommentsPage extends BasePage {
     const comment = this.getCommentLocator(text);
 
     // 🔹 3. Ждём, что комментарий полностью отрендерился
-    await comment.waitFor({ state: 'visible', timeout: 10000 });
+    await comment.waitFor({ state: 'visible'});
 
     // 🔹 4. Ищем кнопку Delete — пробуем несколько вариантов селектора
     // Вариант А: по тексту (основной)
@@ -69,7 +69,7 @@ export class CommentsPage extends BasePage {
 
     // 🔹 5. Ждём видимость кнопки с отладкой
     try {
-      await deleteBtn.waitFor({ state: 'visible', timeout: 10000 });
+      await deleteBtn.waitFor({ state: 'visible'});
     } catch (e) {
       // 🔥 Отладка: делаем скриншот и логи, если кнопка не появилась
       console.log('❌ Кнопка Delete не найдена для комментария:', text);
@@ -83,6 +83,6 @@ export class CommentsPage extends BasePage {
     await deleteBtn.click();
 
     // 🔹 7. Ждём, что комментарий удалён (исчез из DOM)
-    await comment.waitFor({ state: 'detached', timeout: 10000 });
+    await comment.waitFor({ state: 'detached'});
   }
 }

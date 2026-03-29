@@ -105,11 +105,27 @@ export class MainPage extends BasePage {
         .isVisible()
         .catch(() => false)) || (await this.emptyMessage.isVisible().catch(() => false));
     if (!finalCheck) console.warn('⚠️ Лента не обновилась после фильтрации');
-  } // ←✅ ЗАКРЫТИЕ МЕТОДА
+  } 
 
   async hasFeedContent() {
     const articles = await this.articlePreview.count();
     const empty = await this.emptyMessage.isVisible().catch(() => false);
     return articles > 0 || empty;
-  } // ←✅ ЗАКРЫТИЕ МЕТОДА
-} // ←✅ ЗАКРЫТИЕ КЛАССА (ПОСЛЕДНЯЯ СТРОКА!)
+  } 
+
+  getEditArticleButton() {
+    return this.page.locator('button:has-text("Edit Article")').first();
+  }
+
+  // 🔹 Метод: нажать "Edit Article"
+  async clickEditArticle() {
+    const editButton = this.getEditArticleButton();
+    await expect(editButton).toBeVisible();
+    await editButton.click();
+  }
+
+  // 🔹 Метод: ждать загрузки редактора
+  async waitForEditorLoaded() {
+    await this.page.locator('input[name="title"]').waitFor({ state: 'visible'});
+  }
+} 
