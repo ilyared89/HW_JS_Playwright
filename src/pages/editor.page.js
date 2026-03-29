@@ -2,51 +2,44 @@
 import { BasePage } from './base.page.js';
 import { expect } from '@playwright/test';
 
-// ✅ КРИТИЧНО: именованный export class (не export default!)
 export class EditorPage extends BasePage {
     constructor(page) {
         super(page);
         
-        // 🔹 Все локаторы в конструкторе (#3, #4)
+        // 🔹 ВСЕ локаторы в конструкторе
         this.titleInput = page.locator('input[name="title"]');
         this.descriptionInput = page.locator('input[name="description"]');
         this.contentInput = page.locator('textarea[name="body"]');
-        //this.tagsInput = page.locator('input[name="tags"]');
+        this.tagsInput = page.locator('input[placeholder="Enter tags"]');
         this.publishButton = page.locator('button:has-text("Publish Article")').first();
         this.saveButton = page.locator('button:has-text("Update Article")').first();
         this.articleTitle = page.locator('h1');
     }
 
-    // 🔹 Создаёт статью — теги опциональны (#6 — клик только здесь)
     async createArticle(title, description, content, tags = '') {
-        // 🔹 Нативный ввод для React (#2 — без timeout)
-        await this.titleInput.click();
-        await this.titleInput.pressSequentially(title);
-        
-        await this.descriptionInput.click();
-        await this.descriptionInput.pressSequentially(description);
-        
-        await this.contentInput.click();
-        await this.contentInput.pressSequentially(content);
+        // 🔹 Надёжный ввод: fill()
+        await this.titleInput.fill(title);
+        await this.descriptionInput.fill(description);
+        await this.contentInput.fill(content);
         
         // 🔹 Теги: только если переданы
-        if (tags && tags.trim()) {
-            await this.tagsInput.click();
-            await this.tagsInput.pressSequentially(tags);
+        if (tags?.trim()) {
+            await this.tagsInput.fill(tags);
             await this.page.keyboard.press('Enter');
-            await this.page.waitForTimeout(50);
         }
         
-        // 🔹 Отправка: Enter + клик по кнопке (#6)
-        await this.contentInput.press('Enter');
-        await expect(this.publishButton).toBeVisible();
+        // 🔹 Публикация: ждём видимость и кликаем
+        await this.publishButton.waitFor({ state: 'visible' });
+        await expect(this.publishButton).toBeEnabled();
         await this.publishButton.scrollIntoViewIfNeeded();
         await this.publishButton.click();
         
-        // 🔹 Ждём сеть и редирект
-        await this.page.waitForLoadState('networkidle');
-        await expect(this.page).toHaveURL(/article/);
-        await expect(this.articleTitle).toBeVisible();
+        // 🔹 🔥 Надёжное ожидание для hash-роутинга (SPA)
+        // Ждём появление заголовка статьи вместо ненадёжного waitForURL
+        await this.articleTitle.waitFor({ state: 'visible', timeout: 15000 });
+        
+        // 🔹 Дополнительно: ждём контент статьи (используем this.page!)
+        await this.page.locator('.article-content, .article-page p').first().waitFor({ state: 'visible', timeout: 10000 });
     }
 
     async updateContent(content) {
@@ -54,10 +47,12 @@ export class EditorPage extends BasePage {
     }
     
     async save() {
-        await expect(this.saveButton).toBeVisible();
+        await this.saveButton.waitFor({ state: 'visible' });
+        await expect(this.saveButton).toBeEnabled();
         await this.saveButton.scrollIntoViewIfNeeded();
         await this.saveButton.click();
-        await this.page.waitForLoadState('networkidle');
-        await expect(this.page).toHaveURL(/article/);
+        
+        // 🔹 То же самое для редактирования
+        await this.articleTitle.waitFor({ state: 'visible', timeout: 15000 });
     }
-}  
+}

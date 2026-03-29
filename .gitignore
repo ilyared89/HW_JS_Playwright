@@ -10,3 +10,4 @@ tests/.auth/
 .env
 *.local.js
 auth.setup.js.bak
+.prettierrc
