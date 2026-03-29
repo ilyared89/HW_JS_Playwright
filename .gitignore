@@ -11,3 +11,5 @@ tests/.auth/
 *.local.js
 auth.setup.js.bak
 .prettierrc
+findstr
+nulrmdir
