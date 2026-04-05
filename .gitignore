@@ -1,19 +1,54 @@
-
+# 📦 Зависимости
 node_modules/
+
+# 🧪 Playwright
 test-results/
 playwright-report/
 blob-report/
+playwright/.cache/
+
+# 🖼️ Артефакты тестов (скриншоты, видео)
 *.png
 *.webm
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+
+# 🔐 Сессии и секреты (НИКОГДА не коммитить!)
 tests/.auth/
-.editorconfig
 .env
 *.local.js
-auth.setup.js.bak
+*.env.local
+*.env.production
+
+# ⚙️ Конфиги редакторов (опционально)
+.editorconfig
 .prettierrc
+.prettierrc.js
+.eslintrc.*
+.vscode/
+.idea/
+
+# 🗄️ Временные и бэкап-файлы
+*.bak
+*.tmp
+*.log
+Thumbs.db
+.DS_Store
+
+# 📜 Скрипты отладки (локальные)
+check-pages.js
+debug-*.js
 findstr
 nulrmdir
+
+# 🚀 Системные файлы
 *.bat
 *.ps1
-check-pages.js
-изменение main на master
+*.sh
+
+# 📦 Сборка (если есть)
+dist/
+build/
+coverage/
