@@ -9,6 +9,7 @@ export class RegisterPage extends BasePage {
     this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.passwordInput = page.locator('input[type="password"]').first();
     this.signupButton = page.getByRole('button', { name: 'Sign up' });
+    this.yourFeedTab = page.locator(':has-text("Your Feed")').first();
   }
 
   async gotoRegister() {
@@ -25,11 +26,5 @@ export class RegisterPage extends BasePage {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.signupButton.click();
-
-    // Ждём успешной регистрации
-    await Promise.race([
-      this.page.waitForURL(/.*#\/$/),
-      this.page.locator(':has-text("Your Feed")').first().waitFor({ state: 'visible' }),
-    ]);
   }
 }

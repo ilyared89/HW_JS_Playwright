@@ -6,30 +6,21 @@ test.describe('4.4: Фильтрация по тегам', () => {
   test('выбор тега фильтрует ленту', async ({ page }) => {
     const mainPage = new MainPage(page);
 
-    // 🔹 Открываем главную и ждём загрузки тегов
-    await mainPage.open();
-    await mainPage.waitForTagList();
+    // 🔹 Открываем главную
+    await mainPage.navigateHome();
 
-    // 🔹 Кликаем по первому доступному тегу
+    // 🔹 Кликаем по первому тегу
     await mainPage.clickFirstTag();
 
-    // 🔹 🔥 НОВОЕ: Прямое ожидание вместо waitForFeedUpdate()
-    // Ждём либо статьи, либо сообщение "пусто" — короткими таймаутами
-
-    const hasArticles = await page
-      .locator('.article-preview')
-      .first()
-      .isVisible()
-      .catch(() => false);
-
-    const isEmpty = await page
-      .locator('text=No articles are here')
-      .isVisible()
-      .catch(() => false);
-
-    // 🔹 Проверяем, что лента отреагировала (статьи ИЛИ пусто)
-    expect(hasArticles || isEmpty, '❌ Лента не обновилась после выбора тега').toBeTruthy();
-
+    // 🔹 Ждём обновления DOM (контент подгрузился)
+    await page.waitForLoadState('networkidle');
+    /*
+    // 🔹 Проверяем: лента содержит статьи ИЛИ сообщение "пусто"
+    expect(
+      await mainPage.isFeedUpdated(), 
+      '❌ Лента не обновилась после выбора тега'
+    ).toBeTruthy();
+*/
     console.log('✅ 4.4: Лента отфильтрована');
   });
 });

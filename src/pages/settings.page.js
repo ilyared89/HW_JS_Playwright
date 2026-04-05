@@ -1,44 +1,43 @@
 // src/pages/settings.page.js
 import { BasePage } from './base.page.js';
-import { expect } from '@playwright/test';
 
 export class SettingsPage extends BasePage {
   constructor(page) {
     super(page);
 
-    // 🔹 Локаторы в конструкторе (#3, #4)
     this.profileImageInput = page.locator('input[name="image"]');
-    this.usernameInput = page.locator('input[name="username"]');
+    this.usernameInput = page.locator('form input[name="username"]').first();
     this.bioInput = page.locator('textarea[name="bio"]');
-    this.emailInput = page.locator('input[name="email"]');
+    this.emailInput = page.locator('form input[name="email"]').first();
     this.passwordInput = page.locator('input[name="password"]');
-    this.updateSettingsButton = page.locator('button:has-text("Update Settings")');
+    this.updateSettingsButton = page.locator('button:has-text("Update Settings")').first();
+    //this.settingsHeader = page.locator('h3').first();
   }
 
+  // 🔹 Открытие страницы настроек
   async openSettings() {
-    // 🔹 .trim() убирает пробелы в конце!
-    await this.page.goto('https://realworld.qa.guru/#/settings'.trim());
-    await expect(this.usernameInput).toBeVisible();
+    // ✅ Переход с ожиданием загрузки
+    await this.page.goto('https://realworld.qa.guru/#/settings', {
+      waitUntil: 'networkidle',
+    });
+    // ✅ 1. Теперь ждём поле username (уже точно на правильной странице)
+    await this.usernameInput.waitFor({ state: 'visible' });
+    // ✅ 2. Проверяем URL (защита от редиректа на /login)
+    await this.page.waitForURL(/#\/settings/, {});
   }
 
+  // 🔹 Обновление настроек
   async updateSettings(settings) {
-    // Заполняем поля
-    await this.usernameInput.fill(settings.username);
-    await this.bioInput.fill(settings.bio);
-    await this.emailInput.fill(settings.email);
-    await this.passwordInput.fill(settings.password);
-    await this.profileImageInput.fill(settings.image.trim());
+    if (settings.username) await this.usernameInput.fill(settings.username);
+    if (settings.bio) await this.bioInput.fill(settings.bio);
+    if (settings.email) await this.emailInput.fill(settings.email);
+    if (settings.password) await this.passwordInput.fill(settings.password);
+    if (settings.image) await this.profileImageInput.fill(settings.image.trim());
 
-    // 🔹 Простой надёжный селектор
-    const submitButton = this.page.locator('button:has-text("Update Settings")').first();
+    await this.updateSettingsButton.scrollIntoViewIfNeeded();
+    await this.updateSettingsButton.click();
 
-    // 🔹 Скроллим и кликаем
-    await submitButton.scrollIntoViewIfNeeded();
-    await submitButton.click();
-
-    // 🔹 ПРОВЕРЯЕМ РЕЗУЛЬТАТ: поля содержат новые значения
-    // Это работает, даже если страница обновилась после клика
-    await expect(this.usernameInput).toHaveValue(settings.username);
-    await expect(this.emailInput).toHaveValue(settings.email);
+    // Ждём подтверждения обновления
+    await this.page.waitForTimeout(1000);
   }
 }

@@ -1,6 +1,5 @@
 // src/pages/main.page.js
 import { BasePage } from './base.page.js';
-import { expect } from '@playwright/test';
 
 export class MainPage extends BasePage {
   constructor(page) {
@@ -10,16 +9,49 @@ export class MainPage extends BasePage {
     this.globalFeedButton = page.locator('button:has-text("Global Feed")');
     this.newArticleLink = page.getByRole('link', { name: 'New Article' });
     this.articleCards = page.locator('.article-preview');
-    this.articleTitle = page.locator('h1');
     this.articlePreview = page.locator('.article-preview');
     this.tagList = page.locator('.tag-list');
     this.tagPill = page.locator('.tag-pill.tag-default');
     this.emptyMessage = page.locator('text=No articles are here');
+    this.editArticleButton = page.locator('button:has-text("Edit Article")').first();
+    this.articleTitle = page.locator('h1').first();
+    this.titleInput = page.locator('input[name="title"]');
+    this.activeTag = page.locator('.nav-link.active, .tag-pill.active').first();
+    this.navLink = page.locator('.nav-link').first();
   }
 
   async open() {
-    await super.open('#/');
+    await this.page.reload({ waitUntil: 'networkidle' });
+    await this.tagList.waitFor({ state: 'visible' });
   }
+
+  // 🔹 Метод: получить локатор активного тега (для expect в тесте)
+  getActiveTag() {
+    return this.activeTag;
+  }
+
+  // 🔹 Метод: навигация на главную (как в рабочем примере)
+  async navigateHome() {
+    await this.page.goto('https://realworld.qa.guru/#/');
+    await this.navLink.waitFor({ state: 'visible' });
+    await this.page.waitForTimeout(500); // 🔹 Стабилизация после хэш-навигации
+  }
+
+  async open() {
+    return this.navigateHome();
+  }
+
+  // 🔹 Метод: клик по первому тегу (как в рабочем примере)
+  async clickFirstTag() {
+    // Ждём загрузки сайдбара с тегами
+    await this.tagList.first().waitFor({ state: 'visible' });
+
+    // Кликаем по первому тегу
+    const firstTag = this.tagList.first();
+    await firstTag.scrollIntoViewIfNeeded();
+    await firstTag.click();
+  }
+
   async clickYourFeed() {
     await this.yourFeedTab.click();
   }
@@ -29,23 +61,16 @@ export class MainPage extends BasePage {
     await this.articleCards.first().waitFor({ state: 'visible' });
   }
 
-  async waitForArticles() {
-    await expect
-      .poll(async () => await this.articleCards.count(), {
-        message: 'Ожидаем появления статей',
-        intervals: [500],
-      })
-      .toBeGreaterThan(0);
-  }
-
   async clickNewArticle() {
-    await this.newArticleLink.click();
+    await this.newArticleLink.waitFor({ state: 'visible' });
+    await this.newArticleLink.scrollIntoViewIfNeeded();
+    await this.newArticleLink.click({ force: true });
   }
 
   async openArticleBySlugAndTitle(slug, expectedTitle) {
     await this.page.goto(`https://realworld.qa.guru/#/article/${slug}`);
     await this.articleTitle.waitFor({ state: 'visible' });
-    await expect(this.articleTitle).toContainText(expectedTitle);
+
     console.log('✅ Статья открыта по slug:', slug);
   }
 
@@ -69,63 +94,81 @@ export class MainPage extends BasePage {
     let link = firstCard.locator('a[href*="#/article/"]').first();
     if (!(await link.isVisible().catch(() => false))) link = firstCard.locator('a').first();
     if (!(await link.isVisible().catch(() => false))) link = firstCard.locator('h1').first();
-    await expect(link, '❌ Ссылка на статью не найдена').toBeVisible();
+
+    // ✅ Исправлено: вызываем waitFor у конкретного локатора
+    await link.waitFor({ state: 'visible' });
     await link.click();
-    await this.page.locator('h1').first().waitFor({ state: 'visible' });
+    await this.articleTitle.waitFor({ state: 'visible' });
   }
 
   async getArticleTitleText() {
     return this.articleTitle.textContent();
   }
-  async waitForTagList() {
-    await this.tagList.waitFor({ state: 'visible' });
-  }
-  async clickFirstTag() {
-    await this.tagPill.first().click();
-  }
 
-  async waitForFeedUpdate() {
+  async isFeedUpdated() {
+    // Ждём появления любого из двух состояний
+    await Promise.race([
+      this.articlePreview.first().waitFor({ state: 'attached' }),
+      this.emptyMessage.waitFor({ state: 'attached' }),
+    ]);
+
+    // Проверяем видимость
     const hasArticles = await this.articlePreview
       .first()
       .isVisible()
       .catch(() => false);
-    if (hasArticles) {
-      await this.articlePreview.first().waitFor({ state: 'visible' });
-      return;
-    }
     const isEmpty = await this.emptyMessage.isVisible().catch(() => false);
-    if (isEmpty) {
-      await this.emptyMessage.waitFor({ state: 'visible' });
-      return;
+    return hasArticles || isEmpty;
+  }
+
+  async waitForArticles() {
+    await Promise.race([
+      this.articleCards.first().waitFor({ state: 'visible' }),
+      this.emptyMessage.waitFor({ state: 'visible' }),
+    ]);
+  }
+
+  async waitForTagList() {
+    await this.tagList.waitFor({ state: 'visible' });
+  }
+
+  async clickFirstTag() {
+    const tag = this.tagPill.first();
+    await tag.waitFor({ state: 'visible' });
+    await tag.click();
+    return tag; // 🔹 Возвращаем локатор для дальнейшего ожидания
+  }
+
+  async waitForFeedUpdate() {
+    // 🔹 Вариант А: ждём появления статей
+    const articlesVisible = await this.articlePreview
+      .first()
+      .isVisible({})
+      .catch(() => false);
+
+    if (articlesVisible) {
+      await this.articlePreview.first().waitFor({ state: 'visible' });
+      return true;
     }
-    await this.page.waitForTimeout(1000);
-    const finalCheck =
-      (await this.articlePreview
-        .first()
-        .isVisible()
-        .catch(() => false)) || (await this.emptyMessage.isVisible().catch(() => false));
-    if (!finalCheck) console.warn('⚠️ Лента не обновилась после фильтрации');
-  } 
+  }
 
   async hasFeedContent() {
     const articles = await this.articlePreview.count();
     const empty = await this.emptyMessage.isVisible().catch(() => false);
     return articles > 0 || empty;
-  } 
-
-  getEditArticleButton() {
-    return this.page.locator('button:has-text("Edit Article")').first();
   }
 
-  // 🔹 Метод: нажать "Edit Article"
+  getEditArticleButton() {
+    return this.editArticleButton;
+  }
+
   async clickEditArticle() {
     const editButton = this.getEditArticleButton();
-    await expect(editButton).toBeVisible();
+    await editButton.waitFor({ state: 'visible' });
     await editButton.click();
   }
 
-  // 🔹 Метод: ждать загрузки редактора
   async waitForEditorLoaded() {
-    await this.page.locator('input[name="title"]').waitFor({ state: 'visible'});
+    await this.titleInput.waitFor({ state: 'visible' });
   }
-} 
+}

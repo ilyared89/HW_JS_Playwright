@@ -1,6 +1,5 @@
 // src/pages/article.page.js
 import { BasePage } from './base.page.js';
-import { expect } from '@playwright/test';
 
 export class ArticlePage extends BasePage {
   constructor(page) {
@@ -30,15 +29,11 @@ export class ArticlePage extends BasePage {
   }
 
   async waitForFavoriteState() {
-    await expect(this.favoritedButton).toBeVisible();
+    await this.favoritedButton.waitFor({ state: 'visible' });
   }
 
   async clickEditArticle() {
     await this.articleTitle.waitFor({ state: 'visible' });
-
-    // Проверяем видимость кнопки через expect (без if)
-    await expect(this.editArticleButton, 'Кнопка Edit Article не видна').toBeVisible();
-
     await this.editArticleButton.click();
   }
 

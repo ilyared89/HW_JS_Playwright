@@ -22,7 +22,9 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     // 🔹 Один источник истины для сессии
-    storageState: authFile,
+    storageState: 'tests/.auth/user.json',
+    actionTimeout: 10000,      
+    navigationTimeout: 15000, 
   },
 
   projects: [

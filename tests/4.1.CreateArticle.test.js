@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import { MainPage } from '../src/pages/main.page.js';
 import { EditorPage } from '../src/pages/editor.page.js';
-import { ArticlePage } from '../src/pages/article.page.js'; // 🔹 Добавлен импорт
+import { ArticlePage } from '../src/pages/article.page.js';
 import { saveArticleData } from './shared/article-data.js';
 
 test.describe('4.1: Создание статьи', () => {
@@ -10,7 +10,7 @@ test.describe('4.1: Создание статьи', () => {
     // 🔹 Инициализация страниц
     const mainPage = new MainPage(page);
     const editorPage = new EditorPage(page);
-    const articlePage = new ArticlePage(page); // 🔹 Страница статьи
+    const articlePage = new ArticlePage(page);
 
     // 🔹 Навигация к редактору
     await mainPage.open();
@@ -23,24 +23,29 @@ test.describe('4.1: Создание статьи', () => {
     const articleContent = `Content body for ${timestamp}`;
     const articleTags = `tag-${timestamp}`;
 
+    // 🔹 🔥 ОТЛАДКА ПЕРЕД публикацией (если нужна — только ДО createArticle)
+    // console.log('🔹 Title value:', await editorPage.titleInput.inputValue()); // ❌ Удалить или закомментировать
+
     // 🔹 Создание статьи
-    await editorPage.createArticle(articleTitle, articleDescription, articleContent, articleTags);
+    const result = await editorPage.createArticle(
+      articleTitle,
+      articleDescription,
+      articleContent,
+      articleTags
+    );
 
-    // 🔹 Проверка: хэш в URL изменился на /article/
-    await expect(page).toHaveURL(/.*#\/article\//);
-
-    // 🔹 ПРОВЕРКА ЗАГОЛОВКА: используем ArticlePage, а не EditorPage
-    await expect(articlePage.articleTitle).toContainText(articleTitle);
-
-    // 🔹 Извлекаем название из хэша (для realworld: slug === title)
-    const articleName = await page.evaluate(() => {
-      const hash = location.hash; // "#/article/Article-123"
-      return hash.split('/article/')[1]?.split('?')[0];
+    // 🔹 Сохраняем данные для зависимых тестов
+    saveArticleData({
+      title: result.title,
+      slug: result.slug,
     });
 
-    // 🔹 Сохраняем данные для зависимых тестов (4.2.*)
-    saveArticleData({ title: articleTitle, slug: articleName });
+    // 🔹 Финальный ассерт: заголовок статьи содержит ожидаемый текст
+    await expect(articlePage.articleTitle).toContainText(articleTitle);
 
-    console.log('✅ 4.1: Статья создана:', articleTitle, '| Slug:', articleName);
+    console.log('✅ 4.1: Статья создана:', articleTitle, '| Slug:', result.slug);
+
+    // 🔹 Опционально: отладка ПОСЛЕ создания (но без обращения к полям редактора)
+    console.log('🔹 Final URL:', page.url());
   });
 });

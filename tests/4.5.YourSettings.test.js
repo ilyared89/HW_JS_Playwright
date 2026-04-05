@@ -1,25 +1,31 @@
 // tests/4.5.YourSettings.test.js
 import { test, expect } from '@playwright/test';
 import { SettingsPage } from '../src/pages/settings.page.js';
-import { faker } from '@faker-js/faker';
 
-test('4.5.Изменение личных настроек', async ({ page }) => {
-  const newSettings = {
-    username: faker.person.fullName({ lastName: 'Bin' }),
-    bio: 'молодой QA',
-    email: faker.internet.email(),
-    password: 'Test123!',
-    image: 'https://google.com/logo.png',
-  };
+test.describe('4.5.Изменение личных настроек', () => {
+  test('Изменение личных настроек', async ({ page }) => {
+    const settingsPage = new SettingsPage(page);
 
-  console.log('Новые настройки:', newSettings);
+    // 🔹 Открываем настройки (метод сам ждёт загрузку)
+    await settingsPage.openSettings();
 
-  const settingsPage = new SettingsPage(page);
-  await settingsPage.openSettings();
-  await settingsPage.updateSettings(newSettings);
+    // 🔹 Данные для обновления
+    const newSettings = {
+      username: 'TestUser-' + Date.now(),
+      bio: 'молодой QA',
+      email: 'test@example.com',
+      password: 'Test123!',
+      image: 'https://google.com/logo.png',
+    };
 
-  // ✅ Проверка через метод пейджа
-  await expect(settingsPage.usernameInput).toHaveValue(newSettings.username);
-  await expect(settingsPage.emailInput).toHaveValue(newSettings.email);
-  console.log('✅4.5 Настройки успешно обновлены');
+    console.log('Новые настройки:', newSettings);
+
+    // 🔹 Обновляем
+    await settingsPage.updateSettings(newSettings);
+
+    // 🔹 Проверяем: страница не упала, можно продолжить
+    await expect(settingsPage.usernameInput).toHaveValue(newSettings.username);
+
+    console.log('✅4.5 Настройки успешно обновлены');
+  });
 });

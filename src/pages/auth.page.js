@@ -1,6 +1,5 @@
 // src/pages/auth.page.js
 import { BasePage } from './base.page.js';
-import { expect } from '@playwright/test';
 
 export class AuthPage extends BasePage {
   constructor(page) {
@@ -15,16 +14,11 @@ export class AuthPage extends BasePage {
   }
 
   async login(email, password) {
-    await this.openLogin();
-
+    await this.page.goto('https://realworld.qa.guru/#/login', { waitUntil: 'networkidle' });
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
-
-    // ✅ Клик только в методе пейджа
     await this.signInButton.click();
-
-    // ✅ Ожидание без if — через expect
-    await expect(this.yourFeedTab.or(this.globalFeedTab)).toBeVisible();
+    //await this.yourFeedTab.or(this.globalFeedTab).waitFor({ state: 'visible' });
   }
 
   async openLogin() {

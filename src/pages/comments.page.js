@@ -1,6 +1,5 @@
 // src/pages/comments.page.js
 import { BasePage } from './base.page.js';
-import { expect } from '@playwright/test';
 
 export class CommentsPage extends BasePage {
   constructor(page) {
@@ -15,6 +14,7 @@ export class CommentsPage extends BasePage {
 
   // 🔹 Добавление комментария
   async addComment(text) {
+    await this.commentField.waitFor({ state: 'visible' });
     await this.commentField.fill(text);
     await this.postCommentButton.click();
     await this.getCommentLocator(text).waitFor({ state: 'visible' });
@@ -48,7 +48,7 @@ export class CommentsPage extends BasePage {
     const comment = this.getCommentLocator(text);
 
     // 🔹 3. Ждём, что комментарий полностью отрендерился
-    await comment.waitFor({ state: 'visible'});
+    await comment.waitFor({ state: 'visible' });
 
     // 🔹 4. Ищем кнопку Delete — пробуем несколько вариантов селектора
     // Вариант А: по тексту (основной)
@@ -69,7 +69,7 @@ export class CommentsPage extends BasePage {
 
     // 🔹 5. Ждём видимость кнопки с отладкой
     try {
-      await deleteBtn.waitFor({ state: 'visible'});
+      await deleteBtn.waitFor({ state: 'visible' });
     } catch (e) {
       // 🔥 Отладка: делаем скриншот и логи, если кнопка не появилась
       console.log('❌ Кнопка Delete не найдена для комментария:', text);
@@ -83,6 +83,6 @@ export class CommentsPage extends BasePage {
     await deleteBtn.click();
 
     // 🔹 7. Ждём, что комментарий удалён (исчез из DOM)
-    await comment.waitFor({ state: 'detached'});
+    await comment.waitFor({ state: 'detached' });
   }
 }
