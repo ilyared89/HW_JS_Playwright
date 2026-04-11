@@ -52,3 +52,13 @@ nulrmdir
 dist/
 build/
 coverage/
+
+#  Fork
+.ForkSettings
+
+# Allure результаты (не коммитим)
+allure-results/
+allure-report/
+
+#  Но можно закоммитить конфигурацию:
+!allure.config.js

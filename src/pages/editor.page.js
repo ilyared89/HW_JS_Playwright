@@ -13,6 +13,7 @@ export class EditorPage extends BasePage {
     this.publishButton = page.locator('button:has-text("Publish Article")').first();
     this.saveButton = page.locator('button:has-text("Update Article")').first();
     this.articleTitle = page.locator('h1').first();
+    this.errorMessagesLocator = page.locator('.error-messages, .form-error, [class*="error"]');
   }
 
   // 🔹 Создание статьи — возвращает { title, slug } для использования в тесте
@@ -31,7 +32,6 @@ export class EditorPage extends BasePage {
       await this.tagsInput.waitFor({ state: 'visible' });
       await this.tagsInput.fill(tags);
       await this.page.keyboard.press('Enter');
-      await this.page.waitForTimeout(300);
     }
     // Пробуем дождаться хэш-редиректа
     const hashChanged = await this.page
@@ -43,9 +43,8 @@ export class EditorPage extends BasePage {
 
     // Если редиректа нет — проверяем ошибки валидации
     if (!hashChanged) {
-      const errorMessages = await this.page
-        .locator('.error-messages, .form-error, [class*="error"]')
-        .allTextContents();
+      // 🔹 Используем вынесенный локатор
+      const errorMessages = await this.errorMessagesLocator.allTextContents();
       if (errorMessages.length > 0) {
         console.log('❌ Ошибки валидации:', errorMessages);
         throw new Error('Публикация не удалась: ' + errorMessages.join('; '));

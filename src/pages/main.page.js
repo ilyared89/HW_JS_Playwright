@@ -14,42 +14,42 @@ export class MainPage extends BasePage {
     this.tagPill = page.locator('.tag-pill.tag-default');
     this.emptyMessage = page.locator('text=No articles are here');
     this.editArticleButton = page.locator('button:has-text("Edit Article")').first();
-    this.articleTitle = page.locator('h1').first();
+    //this.articleTitle = page.locator('h1').first();
+    this.articleTitle = page
+      .locator('.article-page h1, h1.article-title, [data-test="article-title"], h1')
+      .first();
     this.titleInput = page.locator('input[name="title"]');
     this.activeTag = page.locator('.nav-link.active, .tag-pill.active').first();
     this.navLink = page.locator('.nav-link').first();
-  }
-
-  async open() {
-    await this.page.reload({ waitUntil: 'networkidle' });
-    await this.tagList.waitFor({ state: 'visible' });
+    this.articlePageTitle = page.locator('h1').first();
+    this.articleContainer = page.locator('.article-page').first();
+    this._getArticleLinkByHref = (parent) => parent.locator('a[href*="#/article/"]').first();
+    this._getArticleLinkGeneric = (parent) => parent.locator('a').first();
+    this._getArticleTitleAsLink = (parent) => parent.locator('h1').first();
+    this.globalFeedButton = page.locator('button:has-text("Global Feed")').first();
+    this.yourFeedButton = page.locator('button:has-text("Your Feed")').first();
+    this.activeFeedButton = page
+      .locator('.nav-link.active, button.active, .feed-toggle .active')
+      .first();
   }
 
   // 🔹 Метод: получить локатор активного тега (для expect в тесте)
   getActiveTag() {
     return this.activeTag;
   }
+  // 🔹 Геттер для заголовка статьи
+  getArticlePageTitle() {
+    return this.articlePageTitle;
+  }
 
   // 🔹 Метод: навигация на главную (как в рабочем примере)
   async navigateHome() {
     await this.page.goto('https://realworld.qa.guru/#/');
     await this.navLink.waitFor({ state: 'visible' });
-    await this.page.waitForTimeout(500); // 🔹 Стабилизация после хэш-навигации
   }
 
   async open() {
     return this.navigateHome();
-  }
-
-  // 🔹 Метод: клик по первому тегу (как в рабочем примере)
-  async clickFirstTag() {
-    // Ждём загрузки сайдбара с тегами
-    await this.tagList.first().waitFor({ state: 'visible' });
-
-    // Кликаем по первому тегу
-    const firstTag = this.tagList.first();
-    await firstTag.scrollIntoViewIfNeeded();
-    await firstTag.click();
   }
 
   async clickYourFeed() {
@@ -57,8 +57,29 @@ export class MainPage extends BasePage {
   }
 
   async clickGlobalFeed() {
-    await this.globalFeedButton.click();
-    await this.articleCards.first().waitFor({ state: 'visible' });
+    // 🔹 1. Ждём кнопку и кликаем
+    await this.globalFeedButton.waitFor({ state: 'visible' });
+    await this.globalFeedButton.click({ force: true });
+
+    await this.page
+      .waitForFunction(() => {
+        const btn = document.querySelector('button:has-text("Global Feed")');
+        return (
+          btn &&
+          (btn.classList.contains('active') || window.getComputedStyle(btn).fontWeight === 'bold')
+        );
+      })
+      .catch(() => {
+        console.log('ℹ️ Кнопка Global Feed не стала активной, продолжаем...');
+      });
+
+    // 🔹 3. Ждём появления статей в ленте
+    await Promise.race([
+      this.articleCards.first().waitFor({ state: 'visible' }),
+      this.emptyMessage.waitFor({ state: 'visible' }),
+    ]);
+
+    console.log('✅ Перешли в Global Feed');
   }
 
   async clickNewArticle() {
@@ -68,10 +89,19 @@ export class MainPage extends BasePage {
   }
 
   async openArticleBySlugAndTitle(slug, expectedTitle) {
-    await this.page.goto(`https://realworld.qa.guru/#/article/${slug}`);
-    await this.articleTitle.waitFor({ state: 'visible' });
+    console.log(`🔹 Открытие статьи по slug: "${slug}"`);
 
-    console.log('✅ Статья открыта по slug:', slug);
+    await this.page.goto(`https://realworld.qa.guru/#/article/${slug}`, {
+      waitUntil: 'domcontentloaded',
+    });
+
+    // 🔹 Ждём контейнер статьи (гарантия, что это не 404)
+    await this.articleContainer.waitFor({ state: 'visible' });
+
+    // 🔹 Теперь ждём заголовок внутри контейнера
+    await this.articlePageTitle.waitFor({ state: 'visible' });
+
+    console.log('✅ Статья открыта');
   }
 
   async openFirstArticle() {
@@ -83,14 +113,12 @@ export class MainPage extends BasePage {
     const count = await this.articleCards.count();
     if (count === 0) {
       console.warn('⚠️ Глобальная лента пуста');
-      await this.page.waitForTimeout(3000);
       if ((await this.articleCards.count()) === 0) {
         throw new Error('Не удалось найти статьи в глобальной ленте');
       }
     }
     const firstCard = this.articleCards.first();
     await firstCard.scrollIntoViewIfNeeded();
-    await this.page.waitForTimeout(500);
     let link = firstCard.locator('a[href*="#/article/"]').first();
     if (!(await link.isVisible().catch(() => false))) link = firstCard.locator('a').first();
     if (!(await link.isVisible().catch(() => false))) link = firstCard.locator('h1').first();

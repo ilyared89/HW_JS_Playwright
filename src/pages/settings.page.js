@@ -11,7 +11,6 @@ export class SettingsPage extends BasePage {
     this.emailInput = page.locator('form input[name="email"]').first();
     this.passwordInput = page.locator('input[name="password"]');
     this.updateSettingsButton = page.locator('button:has-text("Update Settings")').first();
-    //this.settingsHeader = page.locator('h3').first();
   }
 
   // 🔹 Открытие страницы настроек
@@ -36,8 +35,5 @@ export class SettingsPage extends BasePage {
 
     await this.updateSettingsButton.scrollIntoViewIfNeeded();
     await this.updateSettingsButton.click();
-
-    // Ждём подтверждения обновления
-    await this.page.waitForTimeout(1000);
   }
 }

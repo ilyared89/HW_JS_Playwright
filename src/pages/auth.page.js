@@ -4,8 +4,6 @@ import { BasePage } from './base.page.js';
 export class AuthPage extends BasePage {
   constructor(page) {
     super(page);
-
-    // ✅ Все локаторы в конструкторе
     this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.passwordInput = page.locator('input[type="password"]');
     this.signInButton = page.getByRole('button', { name: 'Login' });
@@ -18,7 +16,6 @@ export class AuthPage extends BasePage {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.signInButton.click();
-    //await this.yourFeedTab.or(this.globalFeedTab).waitFor({ state: 'visible' });
   }
 
   async openLogin() {

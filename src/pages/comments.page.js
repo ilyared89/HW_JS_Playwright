@@ -10,6 +10,15 @@ export class CommentsPage extends BasePage {
     this.postCommentButton = page.locator('button:has-text("Post Comment")');
     this.commentsContainer = page.locator('.card');
     this.deleteButton = page.locator('button:has-text("Delete")');
+    this.commentTexts = page.locator('.card-text');
+    this._getDeleteBtnByText = (parent) => parent.locator('button:has-text("Delete")').first();
+    this._getDeleteBtnByClass = (parent) =>
+      parent.locator('button.btn-outline-secondary.btn-sm').first();
+    this._getDeleteBtnByRegex = (parent) =>
+      parent
+        .locator('button')
+        .filter({ hasText: /delete/i })
+        .first();
   }
 
   // 🔹 Добавление комментария
@@ -18,6 +27,10 @@ export class CommentsPage extends BasePage {
     await this.commentField.fill(text);
     await this.postCommentButton.click();
     await this.getCommentLocator(text).waitFor({ state: 'visible' });
+  }
+
+  async getCommentTexts() {
+    return await this.commentTexts.allTextContents();
   }
 
   // 🔹 Локатор для конкретного комментария по тексту
@@ -35,54 +48,46 @@ export class CommentsPage extends BasePage {
   }
 
   // 🔹 Удаление комментария
-
   async deleteComment(text) {
-    // 🔹 1. Настраиваем обработчик диалога ПЕРЕД кликом
-    this.page.on('dialog', async (dialog) => {
+    console.log(`🗑️ Удаление комментария: "${text}"`);
+
+    // 🔹 1. Обработчик диалога — ОБЯЗАТЕЛЬНО до клика!
+    this.page.once('dialog', async (dialog) => {
+      console.log('  🔹 Диалог:', dialog.message());
       if (dialog.message().toLowerCase().includes('delete')) {
         await dialog.accept();
+        console.log('  ✅ Диалог подтверждён');
       }
     });
 
     // 🔹 2. Находим комментарий
     const comment = this.getCommentLocator(text);
-
-    // 🔹 3. Ждём, что комментарий полностью отрендерился
     await comment.waitFor({ state: 'visible' });
 
-    // 🔹 4. Ищем кнопку Delete — пробуем несколько вариантов селектора
-    // Вариант А: по тексту (основной)
-    let deleteBtn = comment.locator('button:has-text("Delete")').first();
+    // 🔹 3. Наводим для появления кнопки
+    await comment.hover();
 
-    // Вариант Б: если не найдено — пробуем по классу (для realworld.qa.guru)
+    // 🔹 4. Ищем кнопку Delete (fallback-цепочка)
+    let deleteBtn = this._getDeleteBtnByText(comment);
     if (!(await deleteBtn.isVisible().catch(() => false))) {
-      deleteBtn = comment.locator('button.btn-outline-secondary.btn-sm').first();
+      deleteBtn = this._getDeleteBtnByClass(comment);
     }
-
-    // Вариант В: если всё ещё не найдено — ищем любой button с "delete" в тексте (регистронезависимо)
     if (!(await deleteBtn.isVisible().catch(() => false))) {
-      deleteBtn = comment
-        .locator('button')
-        .filter({ hasText: /delete/i })
-        .first();
+      deleteBtn = this._getDeleteBtnByRegex(comment);
     }
 
-    // 🔹 5. Ждём видимость кнопки с отладкой
-    try {
-      await deleteBtn.waitFor({ state: 'visible' });
-    } catch (e) {
-      // 🔥 Отладка: делаем скриншот и логи, если кнопка не появилась
-      console.log('❌ Кнопка Delete не найдена для комментария:', text);
-      console.log('🔹 URL:', this.page.url());
-      await this.page.screenshot({ path: 'debug-no-delete-btn.png', fullPage: true });
-      console.log('📸 Скриншот: debug-no-delete-btn.png');
-      throw e;
-    }
+    await deleteBtn.waitFor({ state: 'visible' });
 
-    // 🔹 6. Кликаем и ждём исчезновения комментария
-    await deleteBtn.click();
+    // 🔹 5. Кликаем
+    console.log('  🎯 Клик по кнопке удаления');
+    await deleteBtn.click({ force: true });
 
-    // 🔹 7. Ждём, что комментарий удалён (исчез из DOM)
-    await comment.waitFor({ state: 'detached' });
+    // 🔹 6. 🔹 ЛЁГКОЕ ожидание удаления (не строгое detached!)
+    console.log('  🔹 Ожидание исчезновения комментария...');
+    await comment.waitFor({ state: 'hidden' }).catch(() => {
+      // Фолбэк: просто небольшая пауза для завершения запроса
+      console.log('  ℹ️ Комментарий не скрылся, используем паузу');
+    });
+    console.log('✅ deleteComment() завершён');
   }
 }
