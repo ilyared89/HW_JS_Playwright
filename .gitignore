@@ -6,6 +6,7 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+article-data.json
 
 # 🖼️ Артефакты тестов (скриншоты, видео)
 *.png
