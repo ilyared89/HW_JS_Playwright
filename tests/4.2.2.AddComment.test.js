@@ -20,6 +20,8 @@ test.describe('4.2.2: Добавление комментария', () => {
     const commentText = `Comment-${Date.now()}`;
     await commentsPage.addComment(commentText);
 
+    await expect(commentsPage.getCommentLocator(commentText)).toBeVisible();
+
     console.log('✅ 4.2.2: Комментарий добавлен:', commentText);
   });
 });
