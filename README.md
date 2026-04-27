@@ -22,20 +22,20 @@
 
 | Ссылка                                                                                                                                                  | Учебное заведение                                                     | Период      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------- |
-| [![QA.GURU JS + Playwright](img/qaGuru.svg)](<(https://qa.guru/playwright-js)>)                                                                         | Курс по автоматизации тестирования на JavaScript + Playwright QA.GURU | 2026 / 2026 |
-| [![SKYPRO](https://static.tildacdn.com/tild3364-3965-4237-b664-363533643431/Group_1321317003.svg)](<(https://sky.pro/courses/programming/qa-engineer)>) | Инженер по тестированию SKYPRO                                        | 2022        |
+| [![QA.GURU JS + Playwright](https://qa.guru/wp-content/uploads/2026/03/QA-Guru-Logo-White-Temp.svg)](<(https://qa.guru/playwright-js)>)                                                                         | Курс по автоматизации тестирования на JavaScript + Playwright QA.GURU | 2026 / 2026 |
+| [![SKYPRO](https://static.tildacdn.com/tild3364-3965-4237-b664-363533643431/Group_1321317003.svg)](<(https://sky.pro/courses/programming/qa-engineer)>) | Инженер по тестированию                                        | 2022        |
 
 ---
 
 ### Работа
 
-/_
+
 | Ссылка | Компания | Период |
 |-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|-------------|
 | [![РСХБ-Экосистема](https://rshbdigital.ru/img/logo_a.svg)](https://rshbdigital.ru/rshb-eco) | НСПК (Mir.PlatForm) <br> **Ведущий инженер по ручному тестирования** | 2025 - ... |
 | [![РСХБ-Интех](https://rshbdigital.ru/img/logo_a.svg)](<(https://rshbdigital.ru/rshb-intech)>) | НСПК (Mir.PlatForm) <br>**Ведущий инженер по ручному тестирования** | 2022 - 2025 |
 | [SKYPRO](https://static.tildacdn.com/tild3364-3965-4237-b664-363533643431/Group_1321317003.svg)(https://sky.pro/) | SkyPro <br>**Куратор курса QA по проверке домашних заданий** | 2022 - 2024 |
-_/
+
 
 ---
 
